@@ -13,6 +13,7 @@ import { forceSyncAll } from "../db/replication";
 import { SyncLogger } from "@/lib/sync/syncLogger";
 import { PendingQueue } from "@/lib/sync/pendingQueue";
 import type { SyncLogEntry } from "@/lib/sync/syncLogger";
+import { setupRealtimeSync } from "@/lib/sync/realtimeSync";
 
 interface SyncStats {
   pending: number;
@@ -71,6 +72,7 @@ export function ReplicationProvider({
     Record<string, { isSyncing: boolean; error: Error | null }>
   >({});
   const [syncStats, setSyncStats] = useState<SyncStats>(defaultSyncStats);
+  const [replicationsReady, setReplicationsReady] = useState(false);
 
   useEffect(() => {
     SyncLogger.info("provider", "ReplicationProvider initialized", {
@@ -103,8 +105,29 @@ export function ReplicationProvider({
     return () => clearInterval(interval);
   }, []);
 
+  // BUG-04 FIX: Poll until db.replications is populated (it's set async after setupReplication)
   useEffect(() => {
-    if (!isLoading && db && (db as any).replications) {
+    if (!db || isLoading || replicationsReady) return;
+
+    // Check immediately
+    if ((db as any).replications) {
+      setReplicationsReady(true);
+      return;
+    }
+
+    // Poll every 300ms until replications are set
+    const interval = setInterval(() => {
+      if ((db as any).replications) {
+        setReplicationsReady(true);
+        clearInterval(interval);
+      }
+    }, 300);
+
+    return () => clearInterval(interval);
+  }, [db, isLoading, replicationsReady]);
+
+  useEffect(() => {
+    if (!isLoading && db && replicationsReady && (db as any).replications) {
       const replicationsMap = (db as any).replications;
       const replicationEntries = Object.entries(replicationsMap);
 
@@ -182,7 +205,20 @@ export function ReplicationProvider({
         subscriptions.forEach((sub) => sub.unsubscribe());
       };
     }
-  }, [isLoading, db, (db as any)?.replications]);
+  }, [isLoading, db, replicationsReady]);
+
+  // BUG-02 FIX: Supabase Realtime subscription — triggers reSync on remote changes
+  useEffect(() => {
+    if (!db || !replicationsReady || !online) return;
+
+    const replications = (db as any).replications;
+    if (!replications) return;
+
+    SyncLogger.info("provider", "Starting Supabase Realtime sync...");
+    const cleanup = setupRealtimeSync(replications);
+
+    return cleanup;
+  }, [db, replicationsReady, online]);
 
   const triggerSync = useCallback(() => {
     SyncLogger.info("provider", "Manual sync triggered by user");

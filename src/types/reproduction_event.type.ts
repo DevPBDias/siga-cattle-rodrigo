@@ -44,6 +44,7 @@ export interface ReproductionEvent {
   d0_date: string; // insemination
   d8_date?: string;
   d10_date?: string;
+  d11_date?: string; // Alternative insemination date (FIV / different protocol)
   bull_name?: string;
 
   /** Resync / Diagnostics */

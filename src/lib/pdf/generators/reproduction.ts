@@ -16,9 +16,11 @@ export const generateReproductionPDF = async (
   const brandingOptions = {
     reportName: "RELATÓRIO DE EVENTOS DE REPRODUÇÃO",
     farmName: reportData.farmName,
-    gender: reportData.data.length === 1 ? "Fêmea" : "Fêmeas",
+    gender: reportData.data.length === 1 ? "IATF" : "IATFs",
     systemName: reportData.systemName,
-    reportDate: reportData.reportDate,
+    reportDate: reportData.managementDate !== "---" && reportData.managementDate
+      ? reportData.managementDate
+      : reportData.reportDate,
     totalItems: reportData.data.length,
   };
 

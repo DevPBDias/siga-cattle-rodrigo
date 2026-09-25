@@ -49,7 +49,7 @@ async function loadDevModePlugin(): Promise<void> {
   }
 }
 
-const DB_VERSION = "v15";
+const DB_VERSION = "v16";
 const DB_NAME = `indi_ouro_db_${DB_VERSION}`;
 
 let storageInstance: RxStorage<any, any> | null = null;
@@ -88,6 +88,11 @@ async function createDatabase(): Promise<MyDatabase> {
       console.log(
         `[RxDB] Database already has ${collectionsCount} collections, skipping addCollections`,
       );
+      // BUG-03 FIX: Don't return early — still need to set up replication
+      // (it's a no-op if already configured, but critical on hot-reload/multi-context)
+      setupReplication(db).catch((err: Error) => {
+        console.warn("[RxDB] Replication setup on existing db:", err);
+      });
       return db;
     }
 
@@ -124,6 +129,11 @@ async function createDatabase(): Promise<MyDatabase> {
         reproduction_events: {
           schema: reproductionEventSchema,
           conflictHandler: customConflictHandler,
+          migrationStrategies: {
+            1: (oldDoc) => {
+              return { ...oldDoc, d11_date: oldDoc.d11_date ?? undefined };
+            },
+          },
         },
         animal_statuses: {
           schema: animalStatusSchema,
@@ -286,6 +296,13 @@ export async function clearAllDatabases(): Promise<void> {
         "indi_ouro_db_v7",
         "indi_ouro_db_v8",
         "indi_ouro_db_v9",
+        "indi_ouro_db_v10",
+        "indi_ouro_db_v11",
+        "indi_ouro_db_v12",
+        "indi_ouro_db_v13",
+        "indi_ouro_db_v14",
+        "indi_ouro_db_v15",
+        "indi_ouro_db_v16",
         "offline-sync-queue",
       ];
       for (const name of commonNames) {

@@ -5,7 +5,7 @@ import { cleanSupabaseDocument } from "@/lib/supabase/auth-helper";
 export const reproductionEventReplication = createReplication<ReproductionEvent>({
   collectionName: "reproduction_events",
   tableName: "reproduction_events",
-  replicationIdentifier: "reproduction-events-replication-v13",
+  replicationIdentifier: "reproduction-events-replication-v14",
 
   mapToSupabase: (doc) => ({
     event_id: doc.event_id,
@@ -23,6 +23,7 @@ export const reproductionEventReplication = createReplication<ReproductionEvent>
     d0_date: doc.d0_date,
     d8_date: doc.d8_date ?? null,
     d10_date: doc.d10_date ?? null,
+    d11_date: doc.d11_date ?? null,
     bull_name: doc.bull_name ?? null,
     d22_date: doc.d22_date ?? null,
     d30_date: doc.d30_date ?? null,

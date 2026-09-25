@@ -4,7 +4,12 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 
 export const isSupabaseConfigured = (): boolean => {
-  return !!(supabaseUrl && supabaseAnonKey);
+  return !!(
+    supabaseUrl &&
+    supabaseAnonKey &&
+    !supabaseUrl.includes("placeholder") &&
+    supabaseAnonKey !== "placeholder-key"
+  );
 };
 
 export async function checkDuplicateRGNs(

@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Loader2, AlertCircle } from "lucide-react";
+import { Loader2, AlertCircle, CheckSquare, Square } from "lucide-react";
 import {
   GenderFilterValue,
   AnimalStateFilterValue,
@@ -90,30 +90,38 @@ export function ReportForm() {
     return allEvents.filter((e) => farmAnimalRgns.has(e.rgn));
   }, [allEvents, farmAnimalRgns, filters.farmId, filters.farmFilterMode]);
 
-  // Available Years from Events of the current farm
   const availableYears = useMemo(
     () =>
       Array.from(
         new Set(
           farmEvents
-            .filter((e) => e.d10_date)
-            .map((e) => e.d10_date!.split("-")[0]),
+            .flatMap((e) => [
+              e.d10_date ? e.d10_date.split("-")[0] : null,
+              (e as any).d11_date ? (e as any).d11_date.split("-")[0] : null,
+            ])
+            .filter(Boolean) as string[],
         ),
       ).sort((a, b) => b.localeCompare(a)),
     [farmEvents],
   );
 
-  // Available Dates for the selected Year and Farm
   const availableDatesForYear = useMemo(
     () =>
-      farmEvents
-        .filter(
-          (e) =>
-            e.d10_date && (!filters.year || e.d10_date.startsWith(filters.year)),
-        )
-        .map((e) => e.d10_date!)
-        .filter((value, index, self) => self.indexOf(value) === index) // Unique
-        .sort((a, b) => b.localeCompare(a)),
+      Array.from(
+        new Set(
+          farmEvents.flatMap((e) => {
+            const dates: string[] = [];
+            if (e.d10_date && (!filters.year || e.d10_date.startsWith(filters.year!)))
+              dates.push(e.d10_date);
+            if (
+              (e as any).d11_date &&
+              (!filters.year || (e as any).d11_date.startsWith(filters.year!))
+            )
+              dates.push((e as any).d11_date);
+            return dates;
+          }),
+        ),
+      ).sort((a, b) => b.localeCompare(a)),
     [farmEvents, filters.year],
   );
 
@@ -323,6 +331,20 @@ export function ReportForm() {
     }
   };
 
+  const areAllDatesSelected = useMemo(() => {
+    if (!availableDatesForYear.length) return false;
+    const selected = filters.managementDates || [];
+    return availableDatesForYear.every((d) => selected.includes(d));
+  }, [availableDatesForYear, filters.managementDates]);
+
+  const handleToggleAllDatesForYear = () => {
+    if (areAllDatesSelected) {
+      updateFilters({ managementDates: [] });
+    } else {
+      updateFilters({ managementDates: [...availableDatesForYear] });
+    }
+  };
+
   const handleGenerateReproductionByCowReport = async () => {
     setIsGeneratingCowReport(true);
     try {
@@ -388,9 +410,36 @@ export function ReportForm() {
           availableDatesForYear.length > 0 && (
             <div className="space-y-3 pt-2">
               <div className="flex justify-between items-center px-1">
-                <Label className="text-[10px] font-bold uppercase text-primary tracking-tight">
-                  Datas de Manejo
-                </Label>
+                <div className="flex items-center gap-2">
+                  <Label className="text-[10px] font-bold uppercase text-primary tracking-tight">
+                    Datas de Manejo
+                  </Label>
+                  {filters.managementDates && filters.managementDates.length > 0 && (
+                    <span className="text-[10px] font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                      {filters.managementDates.length} de {availableDatesForYear.length} selecionada{filters.managementDates.length > 1 ? "s" : ""}
+                    </span>
+                  )}
+                </div>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleToggleAllDatesForYear}
+                  className="h-7 px-2.5 text-xs font-bold text-primary border-primary/40 hover:bg-primary/10 transition-colors"
+                >
+                  {areAllDatesSelected ? (
+                    <>
+                      <Square className="w-3.5 h-3.5 mr-1 text-primary" />
+                      Desmarcar todas
+                    </>
+                  ) : (
+                    <>
+                      <CheckSquare className="w-3.5 h-3.5 mr-1 text-primary" />
+                      Selecionar todas de {filters.year}
+                    </>
+                  )}
+                </Button>
               </div>
 
               <div className="bg-muted/30 rounded-xl p-3 grid grid-cols-2 sm:grid-cols-3 gap-3 border border-border/30 max-h-48 overflow-y-auto">

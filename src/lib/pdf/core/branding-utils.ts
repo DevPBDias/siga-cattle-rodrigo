@@ -77,15 +77,19 @@ export const drawHeader = (doc: jsPDF, options: BrandingOptions) => {
 
     doc.setFontSize(LAYOUT_CONFIG.sizes.infoValue);
 
-    let genderLabel = options.gender || "";
-    if (genderLabel === "M") genderLabel = "Machos";
-    else if (genderLabel === "F") genderLabel = "Fêmeas";
-    else if (genderLabel === "Ambos" || genderLabel === "Machos e Fêmeas") {
-      genderLabel = options.reportName.includes("SÊMEN") ? "Touros" : "Animais";
+    let unitLabel = options.gender || "";
+    if (unitLabel === "M") unitLabel = "machos";
+    else if (unitLabel === "F") unitLabel = "fêmeas";
+    else if (unitLabel === "Ambos" || unitLabel === "Machos e Fêmeas") {
+      unitLabel = options.reportName.includes("SÊMEN") ? "touros" : "animais";
+    } else if (unitLabel.toUpperCase().includes("IATF")) {
+      unitLabel = options.totalItems === 1 ? "IATF" : "IATFs";
+    } else {
+      unitLabel = unitLabel.toLowerCase();
     }
 
     doc.text(
-      `Quantidade: ${options.totalItems} ${genderLabel.toLowerCase()}`,
+      `Quantidade: ${options.totalItems} ${unitLabel}`,
       centerX,
       19,
       {
@@ -93,13 +97,19 @@ export const drawHeader = (doc: jsPDF, options: BrandingOptions) => {
       }
     );
 
-    const dateLabel = "Data: ";
+    const isDescriptivePeriod =
+      options.reportDate.toLowerCase().startsWith("todas") ||
+      options.reportDate.toLowerCase().includes("datas selecionadas");
+
+    const dateLabel = isDescriptivePeriod ? "" : "Data: ";
     doc.setFont(LAYOUT_CONFIG.fonts.base, LAYOUT_CONFIG.fonts.normal);
-    const dateLabelWidth = doc.getTextWidth(dateLabel);
+    const dateLabelWidth = dateLabel ? doc.getTextWidth(dateLabel) : 0;
     const dateValueWidth = doc.getTextWidth(options.reportDate);
     const totalDateWidth = dateLabelWidth + dateValueWidth;
 
-    doc.text(dateLabel, pageWidth - marginRight - totalDateWidth, 14);
+    if (dateLabel) {
+      doc.text(dateLabel, pageWidth - marginRight - totalDateWidth, 14);
+    }
     doc.setFont(LAYOUT_CONFIG.fonts.base, LAYOUT_CONFIG.fonts.bold);
     doc.text(options.reportDate, pageWidth - marginRight - dateValueWidth, 14);
   }

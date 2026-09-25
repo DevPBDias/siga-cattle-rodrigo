@@ -3,7 +3,7 @@ import { RxJsonSchema } from "rxdb";
 
 export const reproductionEventSchema: RxJsonSchema<ReproductionEvent> = {
   title: "reproduction schema",
-  version: 0,
+  version: 1,
   primaryKey: "event_id",
   type: "object",
   properties: {
@@ -22,6 +22,7 @@ export const reproductionEventSchema: RxJsonSchema<ReproductionEvent> = {
     d0_date: { type: "string", format: "date" },
     d8_date: { type: "string", format: "date" },
     d10_date: { type: "string", format: "date" },
+    d11_date: { type: "string", format: "date" },
     bull_name: { type: "string" },
     d22_date: { type: "string", format: "date" },
     d30_date: { type: "string", format: "date" },
