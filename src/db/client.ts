@@ -26,6 +26,7 @@ import { movementSchema } from "./schemas/movement.schema";
 import { saleSchema } from "./schemas/sale.schema";
 import { deathSchema } from "./schemas/death.schema";
 import { exchangeSchema } from "./schemas/exchange.schema";
+import { organizationSettingsSchema } from "./schemas/organization_settings.schema";
 
 addRxPlugin(RxDBUpdatePlugin);
 addRxPlugin(RxDBQueryBuilderPlugin);
@@ -49,7 +50,7 @@ async function loadDevModePlugin(): Promise<void> {
   }
 }
 
-const DB_VERSION = "v16";
+const DB_VERSION = "v17";
 const DB_NAME = `indi_ouro_db_${DB_VERSION}`;
 
 let storageInstance: RxStorage<any, any> | null = null;
@@ -165,6 +166,10 @@ async function createDatabase(): Promise<MyDatabase> {
         },
         exchanges: {
           schema: exchangeSchema,
+          conflictHandler: customConflictHandler,
+        },
+        organization_settings: {
+          schema: organizationSettingsSchema,
           conflictHandler: customConflictHandler,
         },
       });
@@ -303,6 +308,7 @@ export async function clearAllDatabases(): Promise<void> {
         "indi_ouro_db_v14",
         "indi_ouro_db_v15",
         "indi_ouro_db_v16",
+        "indi_ouro_db_v17",
         "offline-sync-queue",
       ];
       for (const name of commonNames) {

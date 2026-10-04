@@ -15,6 +15,7 @@ import { Death } from "@/types/death.type";
 import { Exchange } from "@/types/exchange.type";
 
 import { Movement } from "@/types/movement.type";
+import { OrganizationSettings } from "@/types/organization_settings.type";
 
 export type AnimalCollection = RxCollection<Animal>;
 export type VaccineCollection = RxCollection<Vaccine>;
@@ -31,6 +32,7 @@ export type MovementCollection = RxCollection<Movement>;
 export type SaleCollection = RxCollection<Sale>;
 export type DeathCollection = RxCollection<Death>;
 export type ExchangeCollection = RxCollection<Exchange>;
+export type OrganizationSettingsCollection = RxCollection<OrganizationSettings>;
 
 export type MyDatabaseCollections = {
   animals: AnimalCollection;
@@ -48,6 +50,7 @@ export type MyDatabaseCollections = {
   sales: SaleCollection;
   deaths: DeathCollection;
   exchanges: ExchangeCollection;
+  organization_settings: OrganizationSettingsCollection;
 };
 
 export type MyDatabase = RxDatabase<MyDatabaseCollections> & {
@@ -67,5 +70,6 @@ export type MyDatabase = RxDatabase<MyDatabaseCollections> & {
     sales: RxReplicationState<Sale, any>;
     deaths: RxReplicationState<Death, any>;
     exchanges: RxReplicationState<Exchange, any>;
+    organization_settings: RxReplicationState<OrganizationSettings, any>;
   };
 };

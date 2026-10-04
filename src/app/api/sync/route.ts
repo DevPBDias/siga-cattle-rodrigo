@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 
@@ -21,6 +21,7 @@ const ALLOWED_TABLES = new Set([
   "exchanges",
   "movements",
   "semen_doses",
+  "organization_settings",
 ]);
 
 // ---------------------------------------------------------------------------
@@ -99,13 +100,16 @@ export async function GET(req: NextRequest) {
 
   if (lastModified !== null && lastModified !== undefined) {
     const lastModNum = Number(lastModified);
+    // Convert epoch number to ISO string for Supabase timestamptz column
+    const lastModStr = new Date(lastModNum).toISOString();
+
     if (lastId) {
       const idFilter = `"${lastId}"`;
       query = query.or(
-        `server_updated_at.gt.${lastModNum},and(server_updated_at.eq.${lastModNum},${serverPk}.gt.${idFilter})`,
+        `server_updated_at.gt.${lastModStr},and(server_updated_at.eq.${lastModStr},${serverPk}.gt.${idFilter})`,
       );
     } else {
-      query = query.gte("server_updated_at", lastModNum);
+      query = query.gte("server_updated_at", lastModStr);
     }
   }
 
