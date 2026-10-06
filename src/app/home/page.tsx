@@ -13,6 +13,7 @@ import cowModel from "@/assets/images/cow_model.png";
 import { CalendarNavigation } from "@/components/calendar/CalendarNavigation";
 import { useReplication } from "@/hooks/sync/useSyncStatus";
 import { useEffect } from "react";
+import LogoutButton from "@/components/auth/LogoutBtn";
 
 const HomePage = () => {
   const { triggerSync } = useReplication();
@@ -62,8 +63,9 @@ const HomePage = () => {
           <HomeButtons data={homeLinks} />
           <span className="text-[11px] text-white">
             Desenvolvido por
-            <span className="font-bold"> Paulo Bruno M Dias</span>
+            <span className="font-bold"> Persion Tech</span>
           </span>
+          <LogoutButton />
         </div>
 
         <div className="hidden relative z-10 mt-1 lg:flex flex-col items-center gap-2">

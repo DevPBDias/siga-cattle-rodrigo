@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { LucideArrowLeftFromLine, LucideClockFading } from "lucide-react";
+import { clearAllDatabases } from "@/db/client";
 
 export default function LogoutButton() {
   const {
@@ -15,6 +16,7 @@ export default function LogoutButton() {
   const handleLogout = async () => {
     setLoading(true);
     try {
+      await clearAllDatabases(); // Limpa o banco local para o próximo usuário
       await signOut();
       router.push("/login");
     } catch (err) {

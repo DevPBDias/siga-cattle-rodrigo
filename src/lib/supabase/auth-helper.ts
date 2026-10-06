@@ -83,6 +83,11 @@ export function cleanSupabaseDocument<T extends Record<string, any>>(
   const cleaned: any = {};
 
   for (const [key, value] of Object.entries(doc)) {
+    // Skip fields that only exist in Supabase but not in RxDB schemas
+    if (["org_id", "device_id", "server_updated_at", "field_updated_at"].includes(key)) {
+      continue;
+    }
+
     // Don't skip nulls for critical replication fields - let the mapper handle them
     if (
       value === null &&

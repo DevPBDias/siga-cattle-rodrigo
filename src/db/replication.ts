@@ -39,34 +39,20 @@ function getSupabaseConfig() {
   return { url, key };
 }
 
-async function checkSupabaseHealth(url: string, key: string): Promise<boolean> {
-  try {
-    SyncLogger.info("health", "Checking Supabase health...");
+async function checkSupabaseHealth(_url: string, _key: string): Promise<boolean> {
+  // Use navigator.onLine as a lightweight connectivity check.
+  // Avoids hitting the Supabase REST API directly, which logs 401 errors
+  // in the browser console that cannot be suppressed from JavaScript.
+  // The replication framework handles retries automatically when offline.
+  const isOnline = typeof navigator !== "undefined" ? navigator.onLine : true;
 
-    const response = await fetch(`${url}/rest/v1/`, {
-      method: "HEAD",
-      headers: {
-        apikey: key,
-        Authorization: `Bearer ${key}`,
-      },
-      signal: AbortSignal.timeout(5000),
-    });
-
-    const isHealthy = response.ok || response.status === 404;
-    if (isHealthy) {
-      SyncLogger.info("health", "Supabase health check: ✅ OK");
-    } else {
-      SyncLogger.warn(
-        "health",
-        `Supabase health check: ❌ FAILED (${response.status})`,
-      );
-    }
-
-    return isHealthy;
-  } catch (error) {
-    SyncLogger.error("health", "Supabase health check failed", error);
-    return false;
+  if (isOnline) {
+    SyncLogger.info("health", "Network check: ✅ Online");
+  } else {
+    SyncLogger.warn("health", "Network check: ❌ Offline");
   }
+
+  return isOnline;
 }
 
 export async function setupReplication(db: MyDatabase) {

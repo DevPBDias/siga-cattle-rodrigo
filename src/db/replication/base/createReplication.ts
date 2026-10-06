@@ -111,7 +111,7 @@ export function createReplication<T extends ReplicableEntity>(
             limit: String(effectiveBatchSize),
           });
 
-          if (lastId) params.append("lastId", String(lastId));
+          if (lastId && lastId !== "undefined" && lastId !== "null") params.append("lastId", String(lastId));
 
           const url = `/api/sync?${params.toString()}`;
 
@@ -169,7 +169,9 @@ export function createReplication<T extends ReplicableEntity>(
             updated_at: lastRawDoc
               ? (typeof lastRawDoc.server_updated_at === 'string' ? new Date(lastRawDoc.server_updated_at).getTime() : Number(lastRawDoc.server_updated_at))
               : lastServerUpdatedAtNum,
-            last_id: lastRawDoc ? String(lastRawDoc[primaryKey]) : lastId,
+            last_id: lastRawDoc
+              ? String(lastRawDoc[primaryKey] ?? lastRawDoc.id ?? "")
+              : lastId,
           };
 
           if (data.length > 0) {
